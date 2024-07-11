@@ -2,7 +2,7 @@ import os
 import cv2
 import sys
 from parser1 import parser
-from utils_for_imgLabel import save_info, load_info, go2frame, show_image
+from utils_for_imgLabel import save_info, load_info, show_image
 
 args = parser.parse_args()
 video_path = args.label_video_path
@@ -10,18 +10,24 @@ if not os.path.isfile(video_path) or not video_path.endswith('.mp4'):
     print("Not a valid video path! Please modify path in parser.py --label_video_path")
     sys.exit(1)
 
-# 自動生成對應的 .csv 檔案名稱
 csv_path = os.path.splitext(video_path)[0] + '_ball'+ '.csv'
 if not os.path.isfile(csv_path):
     print("Not a valid csv file! Please ensure the corresponding csv file exists at:", csv_path)
     sys.exit(1)
 
-# 獲取影片資訊
 cap = cv2.VideoCapture(video_path)
 fps = int(cap.get(cv2.CAP_PROP_FPS))
-n_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
-# 加載現有標註
+frame_list = []
+success, frame = cap.read()
+while success:
+    frame_list.append(frame)
+    success, frame = cap.read()
+
+cap.release()
+
+n_frames = len(frame_list)
+
 info = load_info(csv_path)
 if len(info) != n_frames:
     print("Number of frames in video and dictionary are not the same!")
@@ -37,19 +43,7 @@ if len(info) != n_frames:
 else:
     print("Load labeled dictionary successfully.")
 
-# 設置用於存儲修改過的幀
 modified_frames = set()
-
-# # # # # # # # # # # # # # # #
-# e: exit program             #
-# s: save info                #
-# n: next frame               #
-# b: previous frame           #
-# f: to first frame           #
-# l: to last frame            #
-# d: fast forward 36 frames   #
-# a: fast backward 36 frames  #
-# # # # # # # # # # # # # # # #
 
 def ball_label(event, x, y, flags, param):
     global frame_no, info, image, modified_frames
@@ -67,7 +61,7 @@ def ball_label(event, x, y, flags, param):
 
 saved_success = False
 frame_no = 0
-_, image = cap.read()
+image = frame_list[frame_no]
 show_image(image, 0, info[0]['X'], info[0]['Y'])
 while True:
     leave = 'y'
@@ -84,7 +78,6 @@ while True:
                     print("Please type 'y/Y' or 'n/N'")
                     continue
                 elif leave == 'y':
-                    cap.release()
                     cv2.destroyAllWindows()
                     print("Exit label program")
                     sys.exit(1)
@@ -92,16 +85,11 @@ while True:
                     break
        
         if leave == 'y':
-            cap.release()
             cv2.destroyAllWindows()
             print("Exit label program")
             sys.exit(1)
 
     elif key == ord('s'):
-        # 只保存被修改過的幀
-        # modified_info = {frame: info[frame] for frame in modified_frames}
-        # save_info(modified_info, csv_path)
-
         save_info(info, video_path)
         saved_success = True
 
@@ -110,7 +98,8 @@ while True:
             print("This is the last frame")
             continue
         frame_no += 1
-        image = go2frame(cap, frame_no, info)
+        image = frame_list[frame_no]
+        image = show_image(image, frame_no, info[frame_no]['X'], info[frame_no]['Y'])
         print("Frame No.{}".format(frame_no))
 
     elif key == ord('b'):
@@ -118,7 +107,8 @@ while True:
             print("This is the first frame")
             continue
         frame_no -= 1
-        image = go2frame(cap, frame_no, info)
+        image = frame_list[frame_no]
+        image = show_image(image, frame_no, info[frame_no]['X'], info[frame_no]['Y'])
         print("Frame No.{}".format(frame_no))
 
     elif key == ord('f'):
@@ -126,7 +116,8 @@ while True:
             print("This is the first frame")
             continue
         frame_no = 0
-        image = go2frame(cap, frame_no, info) 
+        image = frame_list[frame_no]
+        image = show_image(image, frame_no, info[frame_no]['X'], info[frame_no]['Y']) 
         print("Frame No.{}".format(frame_no))
 
     elif key == ord('l'):
@@ -134,7 +125,8 @@ while True:
             print("This is the last frame")
             continue
         frame_no = n_frames - 1
-        image = go2frame(cap, frame_no, info)
+        image = frame_list[frame_no]
+        image = show_image(image, frame_no, info[frame_no]['X'], info[frame_no]['Y'])
         print("Frame No.{}".format(frame_no))
 
     elif key == ord('d'):
@@ -143,7 +135,8 @@ while True:
             frame_no = n_frames - 1
         else:
             frame_no += 36
-        image = go2frame(cap, frame_no, info)
+        image = frame_list[frame_no]
+        image = show_image(image, frame_no, info[frame_no]['X'], info[frame_no]['Y'])
         print("Frame No.{}".format(frame_no))
 
     elif key == ord('a'):
@@ -152,7 +145,8 @@ while True:
             frame_no = 0
         else:
             frame_no -= 36
-        image = go2frame(cap, frame_no, info)
+        image = frame_list[frame_no]
+        image = show_image(image, frame_no, info[frame_no]['X'], info[frame_no]['Y'])
         print("Frame No.{}".format(frame_no))
 
     elif key == ord(' '):  
@@ -165,8 +159,10 @@ while True:
             print("This is the last frame")
             continue
         frame_no += 1
-        image = go2frame(cap, frame_no, info)
+        image = frame_list[frame_no]
+        image = show_image(image, frame_no, info[frame_no]['X'], info[frame_no]['Y'])
         print(f"Frame No.{frame_no}")
 
     else:
-        image = go2frame(cap, frame_no, info)
+        image = frame_list[frame_no]
+        image = show_image(image, frame_no, info[frame_no]['X'], info[frame_no]['Y'])
