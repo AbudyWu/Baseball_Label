@@ -2,7 +2,7 @@ import os
 import cv2
 import sys
 from parser1 import parser
-from utils_for_imgLabel import save_info, load_info, show_image
+from utils_for_imgLabel import save_info, load_info, go2frame, show_image
 
 args = parser.parse_args()
 video_path = args.label_video_path
@@ -23,7 +23,6 @@ success, frame = cap.read()
 while success:
     frame_list.append(frame)
     success, frame = cap.read()
-
 cap.release()
 
 n_frames = len(frame_list)
@@ -61,8 +60,8 @@ def ball_label(event, x, y, flags, param):
 
 saved_success = False
 frame_no = 0
-image = frame_list[frame_no]
-show_image(image, 0, info[0]['X'], info[0]['Y'])
+image = frame_list[0].copy()
+show_image(image, 0, info[0]['Visibility'], info[0]['X'], info[0]['Y'])
 while True:
     leave = 'y'
     cv2.imshow('imgLabel', image)
@@ -83,14 +82,14 @@ while True:
                     sys.exit(1)
                 elif leave == 'n':
                     break
-       
+
         if leave == 'y':
             cv2.destroyAllWindows()
             print("Exit label program")
             sys.exit(1)
 
     elif key == ord('s'):
-        save_info(info, video_path)
+        save_info(info, csv_path)
         saved_success = True
 
     elif key == ord('n'):
@@ -98,8 +97,7 @@ while True:
             print("This is the last frame")
             continue
         frame_no += 1
-        image = frame_list[frame_no]
-        image = show_image(image, frame_no, info[frame_no]['X'], info[frame_no]['Y'])
+        image = go2frame(frame_list, frame_no, info)
         print("Frame No.{}".format(frame_no))
 
     elif key == ord('b'):
@@ -107,8 +105,7 @@ while True:
             print("This is the first frame")
             continue
         frame_no -= 1
-        image = frame_list[frame_no]
-        image = show_image(image, frame_no, info[frame_no]['X'], info[frame_no]['Y'])
+        image = go2frame(frame_list, frame_no, info)
         print("Frame No.{}".format(frame_no))
 
     elif key == ord('f'):
@@ -116,8 +113,7 @@ while True:
             print("This is the first frame")
             continue
         frame_no = 0
-        image = frame_list[frame_no]
-        image = show_image(image, frame_no, info[frame_no]['X'], info[frame_no]['Y']) 
+        image = go2frame(frame_list, frame_no, info) 
         print("Frame No.{}".format(frame_no))
 
     elif key == ord('l'):
@@ -125,8 +121,7 @@ while True:
             print("This is the last frame")
             continue
         frame_no = n_frames - 1
-        image = frame_list[frame_no]
-        image = show_image(image, frame_no, info[frame_no]['X'], info[frame_no]['Y'])
+        image = go2frame(frame_list, frame_no, info)
         print("Frame No.{}".format(frame_no))
 
     elif key == ord('d'):
@@ -135,8 +130,7 @@ while True:
             frame_no = n_frames - 1
         else:
             frame_no += 36
-        image = frame_list[frame_no]
-        image = show_image(image, frame_no, info[frame_no]['X'], info[frame_no]['Y'])
+        image = go2frame(frame_list, frame_no, info)
         print("Frame No.{}".format(frame_no))
 
     elif key == ord('a'):
@@ -145,8 +139,7 @@ while True:
             frame_no = 0
         else:
             frame_no -= 36
-        image = frame_list[frame_no]
-        image = show_image(image, frame_no, info[frame_no]['X'], info[frame_no]['Y'])
+        image = go2frame(frame_list, frame_no, info)
         print("Frame No.{}".format(frame_no))
 
     elif key == ord(' '):  
@@ -159,10 +152,10 @@ while True:
             print("This is the last frame")
             continue
         frame_no += 1
-        image = frame_list[frame_no]
-        image = show_image(image, frame_no, info[frame_no]['X'], info[frame_no]['Y'])
+        image = go2frame(frame_list, frame_no, info)
         print(f"Frame No.{frame_no}")
 
     else:
-        image = frame_list[frame_no]
-        image = show_image(image, frame_no, info[frame_no]['X'], info[frame_no]['Y'])
+        image = go2frame(frame_list, frame_no, info)
+
+

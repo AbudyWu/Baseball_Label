@@ -170,7 +170,7 @@ def confusion(y_pred, y_true, tol):
     FP2: False positive
     FN: False negative
     FP1: If distance of ball center between 
-         ground truth and prediction is larger than tolerance
+            ground truth and prediction is larger than tolerance
 
     param:
     y_pred --> predicted heat map
@@ -289,21 +289,43 @@ def load_info(csv_path):
 
     return info
 
-def show_image(image, frame_no, x, y):
-    # h, w, _ = image.shape
-    if x != -1 and y != -1:
-        # x_pos = int(x*w)
-        # y_pos = int(y*h)
+# def show_image(image, frame_no, x, y):
+#     if x != 0 and y != 0:
+#         x_pos = int(x)
+#         y_pos = int(y)
+#         cv2.circle(image, (x_pos, y_pos), 5, (0, 0, 255), -1)
+#     text = "Frame: {}".format(frame_no)
+#     cv2.putText(image, text, (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 3, cv2.LINE_AA)
+#     return image
+
+# def go2frame(cap, frame_no, info):
+#     x, y = info[frame_no]['X'], info[frame_no]['Y']
+#     cap.set(1, frame_no)
+#     ret, image = cap.read()
+#     image = show_image(image, frame_no, x, y)
+#     return image
+
+def show_image(image, frame_no, visibility, x, y):
+    if visibility != 0 and x != 0 and y != 0:
         x_pos = int(x)
         y_pos = int(y)
         cv2.circle(image, (x_pos, y_pos), 5, (0, 0, 255), -1)
+    elif visibility == 0 and x == 0 and y == 0 :
+        clear_text = "This frame Clear"
+        cv2.putText(image, clear_text, (30, 90), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 3, cv2.LINE_AA)
     text = "Frame: {}".format(frame_no)
-    cv2.putText(image, text, (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 3, cv2.LINE_AA)
+    cv2.putText(image, text, (30, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 3, cv2.LINE_AA)  
     return image
 
-def go2frame(cap, frame_no, info):
+# def go2frame(frame_list, frame_no, info):
+#     x, y = info[frame_no]['X'], info[frame_no]['Y']
+#     image = frame_list[frame_no]
+#     image = show_image(image, frame_no, x, y)
+#     return image
+
+def go2frame(frame_list, frame_no, info):
     x, y = info[frame_no]['X'], info[frame_no]['Y']
-    cap.set(1, frame_no)
-    ret, image = cap.read()
-    image = show_image(image, frame_no, x, y)
+    visibility = info[frame_no]['Visibility']
+    image = frame_list[frame_no].copy()
+    image = show_image(image, frame_no, visibility,x, y)
     return image
