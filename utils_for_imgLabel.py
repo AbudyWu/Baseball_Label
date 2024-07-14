@@ -243,16 +243,9 @@ def compute_acc(evaluation):
         recall = 0
     return accuracy, precision, recall
 
-def save_info(info, video_path):
+def save_info(info, csv_path):
     success = False
     try:
-        # video_name = os.path.split(video_path)[-1][:-4]
-        video_name = os.path.splitext(os.path.basename(video_path))[0]
-        save_dir = os.path.dirname(video_path)
-        os.makedirs(save_dir, exist_ok=True)
-        csv_path = os.path.join(save_dir, video_name + '_ball.csv')
-        # video_name = "./0701data/108/" + video_name
-        # video_name = "./0701data/109/" + video_name
         with open(csv_path, 'w') as file:
             file.write("Frame,Visibility,X,Y\n")
             for frame in info:
